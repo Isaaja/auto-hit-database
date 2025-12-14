@@ -1,16 +1,32 @@
 name: Auto Hit API
 
-# Schedule: jalankan setiap 5 menit
 on:
+  workflow_dispatch: # bisa trigger manual
   schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch: # optional: bisa trigger manual
+    - cron: "*/5 * * * *" # setiap 5 menit, UTC
 
 jobs:
   ping-api:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping API endpoint
+      - name: Ping API endpoint with retry
         run: |
-          echo "Pinging API..."
-          curl -X GET https://forum-api-production-2e8e.up.railway.app/threads/thread-ElUUVV9jk89yieRcoGLNP
+          URL="https://forum-api-production-2e8e.up.railway.app/threads/thread-ElUUVV9jk89yieRcoGLNP"
+          SUCCESS=0
+          for i in 1 2 3; do
+            echo "Attempt $i: pinging $URL"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" $URL || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "Ping successful!"
+              SUCCESS=1
+              break
+            else
+              echo "Ping failed with status $STATUS. Retrying in 10s..."
+              sleep 10
+            fi
+          done
+
+          if [ "$SUCCESS" -ne 1 ]; then
+            echo "All attempts failed."
+            exit 1
+          fi
