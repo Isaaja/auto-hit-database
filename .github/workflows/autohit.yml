@@ -1,0 +1,16 @@
+name: Auto Hit API
+
+# Schedule: jalankan setiap 5 menit
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # optional: bisa trigger manual
+
+jobs:
+  ping-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API endpoint
+        run: |
+          echo "Pinging API..."
+          curl -X GET https://forum-api-production-2e8e.up.railway.app/threads/thread-ElUUVV9jk89yieRcoGLNP
